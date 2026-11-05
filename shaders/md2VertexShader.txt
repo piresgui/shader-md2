@@ -1,0 +1,25 @@
+#version 330 core
+
+in vec3 positionA;
+in vec3 positionB;
+in vec3 normalA;
+in vec3 normalB;
+in vec2 textuv;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+uniform float interp;
+
+out vec3 norm;
+out vec2 uv;
+
+void main(void){
+	vec3 position = mix(positionA, positionB, interp);
+	vec3 normal = normalize(mix(normalA, normalB, interp));
+
+	gl_Position = projection * view * model * vec4(position, 1.0);
+
+	norm = mat3(view * model) * normal;
+	uv = textuv;
+}
