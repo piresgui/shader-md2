@@ -37,7 +37,8 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main3D {
 
-	private static final String DEFAULT_MODEL = "models/robo/robo.md2";
+	private static final String DEFAULT_MODEL = "models/ogro/ogro.md2";
+	private static final String[] SKIN_EXTENSIONS = { ".pcx", ".png", ".jpg" };
 
 	// The window handle
 	private long window;
@@ -258,12 +259,21 @@ public class Main3D {
 		if (file.skinNames.length == 0) {
 			throw new IOException("MD2 sem skin: " + modelPath);
 		}
-		String skinName = new File(file.skinNames[0].replace('\\', '/')).getName();
-		String skinPath = new File(new File(modelPath).getParentFile(), skinName).getPath();
-		if (skinName.toLowerCase().endsWith(".pcx")) {
-			return PcxLoader.load(skinPath);
+		File folder = new File(modelPath).getParentFile();
+		for (String skin : file.skinNames) {
+			String baseName = new File(skin.replace('\\', '/')).getName().replaceAll("\\.[^.]*$", "");
+			for (String extension : SKIN_EXTENSIONS) {
+				File skinFile = new File(folder, baseName + extension);
+				if (skinFile.exists()) {
+					System.out.println("Skin: " + skinFile.getPath());
+					if (extension.equals(".pcx")) {
+						return PcxLoader.load(skinFile.getPath());
+					}
+					return TextureLoader.loadImage(skinFile.getPath());
+				}
+			}
 		}
-		return TextureLoader.loadImage(skinPath);
+		throw new IOException("Nenhuma skin encontrada para: " + modelPath);
 	}
 
 	private void uploadMatrix(int location, Matrix4f matrix, FloatBuffer buffer) {
